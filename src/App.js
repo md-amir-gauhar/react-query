@@ -2,23 +2,33 @@ import './App.css';
 import { useQuery } from 'react-query';
 import { useState } from 'react';
 
-function Button() {
-  const { data, error } = useQuery('hello-world', () => {
-    return new Promise(resolve => {
-      setTimeout(() => resolve(Math.random()), 2000)
-    })
-  })
-
-  return <button>{data}{error}</button>
+const fetcher = (user) => {
+  return fetch(`https://api.github.com/users/${user}`).then(res => res.json())
 }
 
 function App() {
-  const [visible, setVisible] = useState(true);
+  const [user, setUser] = useState("");
+
+  const { data, isLoading } = useQuery(["github-data", user], () => fetcher(user))
+
+  console.log(data);
+
+  if (isLoading) {
+    return (
+      <div className="App">
+        <label>Enter user:</label>
+        <input type="text" value={user} onChange={e => setUser(e.target.value)} />
+        <h2>loading...</h2>
+      </div>
+    )
+  }
+
   return (
     <div className="App">
-      {visible && <Button />}
-      <button onClick={() => setVisible(visible => !visible)}>click</button>
-      <h1>Hello World</h1>
+      <label>Enter User name:</label>
+      <input type="text" value={user} onChange={e => setUser(e.target.value)} />
+      <h2>Name: {data.name}</h2>
+      <img src={data.avatar_url} alt=""/>
     </div>
   );
 }
